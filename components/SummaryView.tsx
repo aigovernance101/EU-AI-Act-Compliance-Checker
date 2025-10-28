@@ -33,7 +33,7 @@ const classificationStyles: Record<Classification, { bg: string, text: string, b
 };
 
 export const SummaryView: React.FC<SummaryViewProps> = ({ report, onRestart }) => {
-  const { exportReport, isGenerating } = useReportGenerator(report);
+  const { exportPdfReport, isGeneratingPdf, exportJsonReport, isGeneratingJson } = useReportGenerator(report);
 
   if (!report) {
     return (
@@ -87,17 +87,26 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ report, onRestart }) =
       <div className="mt-10 border-t pt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
         <button
           onClick={onRestart}
-          className="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors order-last sm:order-first"
         >
-          Start a New Assessment
+          New Assessment
         </button>
-        <button
-          onClick={exportReport}
-          disabled={isGenerating}
-          className="w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {isGenerating ? 'Generating...' : 'Export Report'}
-        </button>
+        <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={exportPdfReport}
+              disabled={isGeneratingPdf}
+              className="w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {isGeneratingPdf ? 'Generating PDF...' : 'Export PDF'}
+            </button>
+            <button
+              onClick={exportJsonReport}
+              disabled={isGeneratingJson}
+              className="w-full sm:w-auto bg-gray-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {isGeneratingJson ? 'Generating JSON...' : 'Export JSON'}
+            </button>
+        </div>
       </div>
     </div>
   );
