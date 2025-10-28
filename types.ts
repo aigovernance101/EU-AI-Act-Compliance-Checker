@@ -21,12 +21,25 @@ export interface Answer {
 }
 
 export type Classification = "High-Risk" | "In-Scope" | "Out-of-Scope" | "Prohibited" | "Minimal-Risk";
+export type RiskLevel = "High" | "Medium" | "Low" | "N/A";
+export type ObligationStatus = "complete" | "in-progress" | "not-started";
+
+export interface Obligation {
+    name: string;
+    status: ObligationStatus;
+}
 
 export interface ComplianceReport {
   timestamp: string;
-  classification: Classification;
-  obligations: string[];
-  references: string[];
   version: string;
+  system_id: string;
+  classification: Classification;
+  risk_score: number;
+  risk_level: RiskLevel;
   summary: string;
+  owner: string;
+  obligations: Obligation[];
+  references: string[];
+  notes: string;
+  hash?: string; // Optional because it's added just before export
 }

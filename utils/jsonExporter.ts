@@ -8,7 +8,8 @@ export const exportJson = (report: ComplianceReport): void => {
     
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'EU-AI-Act-Compliance-Report.json';
+    const timestamp = new Date(report.timestamp).toISOString().split('T')[0];
+    a.download = `EU-AI-Act-Compliance-Report_${report.system_id}_${timestamp}.json`;
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();

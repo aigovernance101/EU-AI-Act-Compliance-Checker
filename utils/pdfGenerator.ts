@@ -1,90 +1,110 @@
-// NOTE: This utility requires the 'jspdf' library.
-// For this environment, it should be available via an import map in index.html.
-// Example: "jspdf": "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.es.min.js"
 import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
 import type { ComplianceReport } from '../types';
 
 export const generatePdf = (report: ComplianceReport): void => {
   const doc = new jsPDF();
   const margin = 15;
-  const listMargin = margin + 5;
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPos = 20;
 
-  const addPageIfNeeded = () => {
-    if (yPos > 280) { // Check for new page
-      doc.addPage();
-      yPos = 20;
-    }
-  };
-
   // --- Header ---
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
+  doc.setFontSize(20);
   doc.text("EU AI Act Compliance Report", pageWidth / 2, yPos, { align: "center" });
   yPos += 10;
-  
+
+  // --- Subheader ---
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.text(`Generated: ${new Date(report.timestamp).toLocaleString()}`, pageWidth / 2, yPos, { align: "center" });
+  doc.setFontSize(9);
+  const subheaderText = `System ID: ${report.system_id} | Classification: ${report.classification} | Version: ${report.version} | Timestamp: ${new Date(report.timestamp).toLocaleString()}`;
+  doc.text(subheaderText, pageWidth / 2, yPos, { align: "center" });
   yPos += 15;
+
+  // --- KPI Bar ---
+  const completedObligations = report.obligations.filter(o => o.status === 'complete').length;
+  const totalObligations = report.obligations.length;
+  const compliancePercentage = totalObligations > 0 ? Math.round((completedObligations / totalObligations) * 100) : 100;
+
+  const kpiY = yPos;
+  const kpiWidth = (pageWidth - margin * 2) / 3 - 5;
+  const kpiHeight = 25;
   
-  // --- Classification Box ---
+  doc.setFillColor(248, 249, 250); // Light gray background
+  doc.rect(margin, kpiY, kpiWidth, kpiHeight, 'F');
+  doc.rect(margin + kpiWidth + 7.5, kpiY, kpiWidth, kpiHeight, 'F');
+  doc.rect(margin + (kpiWidth + 7.5) * 2, kpiY, kpiWidth, kpiHeight, 'F');
+
+  doc.setFontSize(10);
+  doc.setTextColor(108, 117, 125);
+  doc.text("Risk Score", margin + kpiWidth / 2, kpiY + 8, { align: "center" });
+  doc.text("Risk Level", margin + kpiWidth * 1.5 + 7.5, kpiY + 8, { align: "center" });
+  doc.text("Obligations Completed", margin + kpiWidth * 2.5 + 15, kpiY + 8, { align: "center" });
+  
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setFillColor(230, 247, 255); // A light blue
-  doc.rect(margin, yPos, pageWidth - (margin * 2), 20, 'F');
-  doc.setTextColor(0, 51, 153);
-  doc.text(`Result: ${report.classification}`, margin + 5, yPos + 13);
-  yPos += 30;
+  doc.setFontSize(16);
   doc.setTextColor(0, 0, 0);
+  doc.text(String(report.risk_score), margin + kpiWidth / 2, kpiY + 18, { align: "center" });
+  doc.text(report.risk_level, margin + kpiWidth * 1.5 + 7.5, kpiY + 18, { align: "center" });
+  doc.text(`${compliancePercentage}%`, margin + kpiWidth * 2.5 + 15, kpiY + 18, { align: "center" });
+  
+  yPos += kpiHeight + 15;
 
-  // --- Summary ---
-  addPageIfNeeded();
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text("Summary", margin, yPos);
-  yPos += 8;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  const summaryLines = doc.splitTextToSize(report.summary, pageWidth - (margin * 2));
-  doc.text(summaryLines, margin, yPos);
-  yPos += summaryLines.length * 5 + 10;
-
-  // --- Obligations ---
+  // Draw separator line
+  doc.setDrawColor(222, 226, 230);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 10;
+  
+  // --- Obligations Table ---
   if (report.obligations.length > 0) {
-    addPageIfNeeded();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("Potential Obligations", margin, yPos);
-    yPos += 8;
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    report.obligations.forEach(obligation => {
-      addPageIfNeeded();
-      const obligationLines = doc.splitTextToSize(`• ${obligation}`, pageWidth - listMargin - margin);
-      doc.text(obligationLines, listMargin, yPos);
-      yPos += obligationLines.length * 5 + 3;
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Obligation (Article #)', 'Status']],
+      body: report.obligations.map(ob => [ob.name, ob.status]),
+      theme: 'grid',
+      headStyles: {
+        fillColor: [15, 17, 21], // #0F1115
+        textColor: [249, 250, 251] // #F9FAFB
+      },
+      styles: { font: "helvetica", fontSize: 10 },
     });
-    yPos += 10;
-  }
-
-  // --- References ---
-  if (report.references.length > 0) {
-    addPageIfNeeded();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("Relevant Legal References", margin, yPos);
-    yPos += 8;
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    const referencesText = report.references.join(', ');
-    const referenceLines = doc.splitTextToSize(referencesText, pageWidth - (margin * 2));
-    doc.text(referenceLines, margin, yPos);
+    // Get the y position after the table to continue rendering below it
+    yPos = (doc as any).lastAutoTable.finalY + 10;
   }
   
-  doc.save("EU-AI-Act-Compliance-Report.pdf");
+  // --- Summary & Notes Sections ---
+  const addSection = (title: string, content: string) => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text(title, margin, yPos);
+      yPos += 6;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      const lines = doc.splitTextToSize(content, pageWidth - margin * 2);
+      doc.text(lines, margin, yPos);
+      yPos += lines.length * 5 + 10;
+  };
+  
+  addSection("Summary", report.summary);
+  addSection("Notes", report.notes);
+
+  // --- Hash ---
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Evidence Integrity Hash (SHA-256)", margin, yPos);
+  yPos += 6;
+  doc.setFont("courier", "normal");
+  doc.setFontSize(8);
+  const hashLines = doc.splitTextToSize(report.hash || 'N/A', pageWidth - margin * 2);
+  doc.text(hashLines, margin, yPos);
+  
+  // --- Footer ---
+  const pageHeight = doc.internal.pageSize.getHeight();
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  doc.text("Generated by EU AI Act Compliance Checker © 2025", pageWidth / 2, pageHeight - 10, { align: "center" });
+
+  const timestamp = new Date(report.timestamp).toISOString().split('T')[0];
+  doc.save(`EU-AI-Act-Compliance-Report_${report.system_id}_${timestamp}.pdf`);
 };

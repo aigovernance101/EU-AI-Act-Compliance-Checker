@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ComplianceReport, Classification } from '../types';
+import type { ComplianceReport, Classification, Obligation } from '../types';
 import { useReportGenerator } from '../hooks/useReportGenerator';
 import { LegalReferenceLink } from './LegalReferenceLink';
 
@@ -8,7 +8,6 @@ interface SummaryViewProps {
   onRestart: () => void;
 }
 
-// FIX: Changed JSX.Element to React.ReactElement to resolve "Cannot find namespace 'JSX'" error.
 const classificationStyles: Record<Classification, { bg: string, text: string, border: string, icon: React.ReactElement }> = {
     "Prohibited": { 
         bg: 'bg-red-50', text: 'text-red-800', border: 'border-red-500', 
@@ -32,6 +31,13 @@ const classificationStyles: Record<Classification, { bg: string, text: string, b
     }
 };
 
+const statusColors: Record<Obligation['status'], string> = {
+    'not-started': 'bg-gray-200 text-gray-700',
+    'in-progress': 'bg-yellow-200 text-yellow-800',
+    'complete': 'bg-green-200 text-green-800',
+};
+
+
 export const SummaryView: React.FC<SummaryViewProps> = ({ report, onRestart }) => {
   const { exportPdfReport, isGeneratingPdf, exportJsonReport, isGeneratingJson } = useReportGenerator(report);
 
@@ -51,10 +57,13 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ report, onRestart }) =
   }
 
   const styles = classificationStyles[report.classification];
+  const completedObligations = report.obligations.filter(o => o.status === 'complete').length;
+  const totalObligations = report.obligations.length;
+  const compliancePercentage = totalObligations > 0 ? Math.round((completedObligations / totalObligations) * 100) : 100;
 
   return (
-    <div className="text-center animate-fade-in-fast">
-        <div className={`p-6 rounded-lg border-2 ${styles.border} ${styles.bg} ${styles.text}`}>
+    <div className="text-left animate-fade-in-fast">
+        <div className={`p-6 rounded-lg border-2 text-center ${styles.border} ${styles.bg} ${styles.text}`}>
             <div className="flex justify-center items-center mb-4">
                 {styles.icon}
                 <h2 className="text-3xl font-bold ml-3">Result: {report.classification}</h2>
@@ -62,16 +71,45 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ report, onRestart }) =
             <p className="text-lg">{report.summary}</p>
         </div>
 
-      {report.obligations.length > 0 && (
-        <div className="mt-8 text-left">
-          <h3 className="text-xl font-semibold mb-4 text-gray-800">Potential Obligations:</h3>
-          <ul className="list-disc list-inside bg-gray-50 p-4 rounded-lg space-y-2">
-            {report.obligations.map((obligation, index) => (
-              <li key={index} className="text-gray-700">{obligation}</li>
-            ))}
-          </ul>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+            <div className="bg-gray-50 p-4 rounded-lg text-center">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase">Risk Score</h4>
+                <p className="text-3xl font-bold text-gray-800">{report.risk_score}</p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg text-center">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase">Risk Level</h4>
+                <p className="text-3xl font-bold text-gray-800">{report.risk_level}</p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg text-center">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase">Compliance</h4>
+                <p className="text-3xl font-bold text-gray-800">{compliancePercentage}%</p>
+            </div>
         </div>
-      )}
+
+        {totalObligations > 0 && (
+            <div className="mt-6">
+                <h3 className="text-xl font-semibold text-gray-800">Compliance Progress</h3>
+                <div className="w-full bg-gray-200 rounded-full h-4 mt-2">
+                    <div className="bg-green-500 h-4 rounded-full" style={{ width: `${compliancePercentage}%` }}></div>
+                </div>
+            </div>
+        )}
+
+        {report.obligations.length > 0 && (
+            <div className="mt-8">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">Potential Obligations:</h3>
+            <div className="space-y-3">
+                {report.obligations.map((obligation, index) => (
+                <div key={index} className="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+                    <span className="text-gray-700">{obligation.name}</span>
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${statusColors[obligation.status]}`}>
+                        {obligation.status.replace('-', ' ')}
+                    </span>
+                </div>
+                ))}
+            </div>
+            </div>
+        )}
 
       {report.references.length > 0 && (
         <div className="mt-6 text-left">
@@ -95,7 +133,7 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ report, onRestart }) =
             <button
               onClick={exportPdfReport}
               disabled={isGeneratingPdf}
-              className="w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto bg-red-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {isGeneratingPdf ? 'Generating PDF...' : 'Export PDF'}
             </button>
