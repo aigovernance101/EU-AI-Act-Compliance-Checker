@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { Question, Answer } from '../types';
 import { TooltipInfo } from './TooltipInfo';
@@ -18,6 +17,7 @@ const categoryStyles: Record<Question['category'], string> = {
 
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer }) => {
+
   const handleOptionClick = (value: string, next: string) => {
     onAnswer({
       questionId: question.id,

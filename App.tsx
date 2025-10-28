@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { QuestionCard } from './components/QuestionCard';
 import { SummaryView } from './components/SummaryView';
 import { ProgressBar } from './components/ProgressBar';
@@ -56,7 +55,7 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen font-sans text-gray-800 flex flex-col items-center p-4 sm:p-6 md:p-8">
-      <header className="w-full max-w-4xl text-center mb-8">
+      <header className="w-full max-w-4xl text-center my-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-blue-900">EU AI Act Compliance Checker</h1>
         <p className="text-gray-600 mt-2">Navigate the complexities of the EU AI Act with this guided tool.</p>
       </header>
@@ -79,6 +78,10 @@ const App: React.FC = () => {
       <footer className="w-full max-w-4xl text-center mt-8 text-sm text-gray-500">
         <p>Version 2.0 | This tool provides informational guidance and is not legal advice.</p>
         <div className="flex justify-center items-center mt-2 space-x-2">
+            <span>
+              Created by <a href="https://www.linkedin.com/in/nicoroddz/" target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-700 hover:underline">Nico Roddz</a>
+            </span>
+            <span className="text-gray-400">|</span>
             <span>Made with</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg>
             <span>in the EU</span>

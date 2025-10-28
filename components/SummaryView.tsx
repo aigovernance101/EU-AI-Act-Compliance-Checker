@@ -1,5 +1,7 @@
 import React from 'react';
 import type { ComplianceReport, Classification } from '../types';
+import { useReportGenerator } from '../hooks/useReportGenerator';
+import { LegalReferenceLink } from './LegalReferenceLink';
 
 interface SummaryViewProps {
   report: ComplianceReport | null;
@@ -31,6 +33,8 @@ const classificationStyles: Record<Classification, { bg: string, text: string, b
 };
 
 export const SummaryView: React.FC<SummaryViewProps> = ({ report, onRestart }) => {
+  const { exportReport, isGenerating } = useReportGenerator(report);
+
   if (!report) {
     return (
       <div className="text-center animate-fade-in">
@@ -74,18 +78,25 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ report, onRestart }) =
           <h3 className="text-xl font-semibold mb-4 text-gray-800">Relevant Legal References:</h3>
           <div className="flex flex-wrap gap-2">
             {report.references.map((ref, index) => (
-              <span key={index} className="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">{ref}</span>
+              <LegalReferenceLink key={index} reference={ref} />
             ))}
           </div>
         </div>
       )}
 
-      <div className="mt-10 border-t pt-6">
+      <div className="mt-10 border-t pt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
         <button
           onClick={onRestart}
-          className="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
           Start a New Assessment
+        </button>
+        <button
+          onClick={exportReport}
+          disabled={isGenerating}
+          className="w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          {isGenerating ? 'Generating...' : 'Export Report'}
         </button>
       </div>
     </div>
