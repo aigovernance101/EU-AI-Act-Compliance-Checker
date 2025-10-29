@@ -4,7 +4,6 @@ import { SummaryView } from './components/SummaryView';
 import { ProgressBar } from './components/ProgressBar';
 import { questions, evaluateCompliance, getQuestionById } from './data/questions';
 import type { ComplianceReport, Answer, Question } from './types';
-import { DisclaimerModal } from './components/DisclaimerModal';
 import { FaqSection } from './components/FaqSection';
 
 const App: React.FC = () => {
@@ -13,7 +12,6 @@ const App: React.FC = () => {
   const [isFinished, setIsFinished] = useState<boolean>(false);
   const [report, setReport] = useState<ComplianceReport | null>(null);
   const [questionPath, setQuestionPath] = useState<string[]>(['start']);
-  const [showDisclaimer, setShowDisclaimer] = useState<boolean>(true);
 
   const currentQuestion: Question | undefined = useMemo(() => getQuestionById(currentQuestionId), [currentQuestionId]);
 
@@ -49,10 +47,6 @@ const App: React.FC = () => {
     if (isFinished) return 100;
     return Math.round((answeredCount / totalQuestions) * 100);
   }, [answers, isFinished]);
-
-  if (showDisclaimer) {
-      return <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />;
-  }
 
   return (
     <div className="bg-gray-50 min-h-screen font-sans text-gray-800 flex flex-col items-center p-4 sm:p-6 md:p-8">
