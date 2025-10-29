@@ -10,7 +10,6 @@ The primary goal of this project is to offer a user-friendly, educational tool t
 - **Risk Classification:** Determines a preliminary classification for an AI system (e.g., Prohibited, High-Risk, In-Scope, Out-of-Scope).
 - **Obligation Identification:** Lists potential compliance obligations based on the risk level.
 - **Report Generation:** Allows users to export their assessment results as a PDF or JSON file for record-keeping.
-- **Multi-language Support:** The interface is available in English, Spanish, and French.
 
 **Disclaimer:** This tool is for informational and educational purposes only and does not constitute legal advice. You should always consult with a qualified legal professional for specific compliance matters.
 
