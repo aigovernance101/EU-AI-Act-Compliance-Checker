@@ -1,5 +1,5 @@
 {
   "name": "EU AI Act Compliance Checker",
-  "description": "An interactive tool to help users navigate the EU AI Act. This checker guides you through a series of questions to determine a preliminary classification for your AI system (e.g., High-Risk, Prohibited) and identifies potential obligations based on your answers.",
+  "description": "Our EU AI Act Compliance Checker is an interactive tool to help you navigate the new AI regulation. This checker guides you through key questions to determine a preliminary classification for your AI system (e.g., High-Risk, Prohibited) and identifies potential obligations under the EU AI Act.",
   "requestFramePermissions": []
 }
